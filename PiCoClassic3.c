@@ -25,6 +25,8 @@ void init_sensor(void);
 void init_led(void);
 void init_buzzer(void);
 void set_led(unsigned char data);
+void buzzer_on(void);
+void buzzer_off(void);
 void main(void);
 #ifdef __cplusplus
 extern "C" {
@@ -203,6 +205,27 @@ void set_led(unsigned char data)
   PORTA.PODR.BIT.B6 = (data>>1)&0x01;   //  左端から２番目
   PORTA.PODR.BIT.B4 = (data>>2)&0x01;   //  左端から３番目
   PORTA.PODR.BIT.B0 = (data>>3)&0x01;   //  左端から４番目
+}
+
+
+/*
+ * Buzzerを開始する
+ */
+void buzzer_on(void)
+{
+  MTU0.TCNT = 0;            //  ブザーのカウント値をリセットする
+  PORTB.PMR.BIT.B3 = 1;     //  汎用ポートから機能ポートに切り替える
+  MTU.TSTR.BIT.CST0 = 1;    //  ブザーのカウントを開始する
+}
+
+
+/*
+ * Buzzerを停止する
+ */
+void buzzer_off(void)
+{
+  PORTB.PMR.BIT.B3 = 0;     //  機能ポートから汎用ポートに切り替える
+  MTU.TSTR.BIT.CST0 = 0;    //  ブザーのカウントを停止する
 }
 
 #ifdef __cplusplus
