@@ -18,6 +18,7 @@
 
 #define IO_OUTPUT 1
 #define IO_INPUT 0
+#define MMPP (0.377)
 
 volatile float v;   //  速度
 volatile float a;   //  加速度
@@ -31,6 +32,8 @@ void init_led(void);
 void init_buzzer(void);
 void init_cmt0(void);
 void init_cmt1(void);
+void int_cmt0(void);
+void int_cmt1(void);
 void set_led(unsigned char data);
 void buzzer_on(void);
 void buzzer_off(void);
@@ -209,18 +212,22 @@ void init_buzzer(void)
  */
 void init_cmt0(void)
 {
-  SYSTEM.PRCR.WORD = 0xA502;
-  MSTP(CMT0) = 0;
-  SYSTEM.PRCR.WORD = 0xA500;
-  CMT.CMSTR0.BIT.STR0 = 0;
-  CMT0.CMCR.BIT.CKS = 1;
-  CMT0.CMCR.BIT.CMIE = 1;
-  CMT0.CMCNT = 0;
-  CMT0.CMCOR = 375 - 1;
+  //  割り込み周期：0.25ms(4kHz)
+  //  (1)48MHz / 32分周 = 1.5MHz ≒ 0.667us
+  //  (2)1.5MHz / 4kHz = 375カウント
+
+  SYSTEM.PRCR.WORD = 0xA502;    //  プロテクト解除
+  MSTP(CMT0) = 0;               //  CMT0の有効化
+  SYSTEM.PRCR.WORD = 0xA500;    //  プロテクト
+  CMT.CMSTR0.BIT.STR0 = 0;      //  CMT0のカウント停止
+  CMT0.CMCR.BIT.CKS = 1;        //  周波数を32分周設定
+  CMT0.CMCR.BIT.CMIE = 1;       //  割込み許可
+  CMT0.CMCNT = 0;               //  カウント値のリセット
+  CMT0.CMCOR = 375 - 1;         //  割込み周期を0.25ms設定
   IEN(CMT0,CMI0) = 1;
   IPR(CMT0,CMI0) = 15;
   IR(CMT0,CMI0) = 0;
-  CMT.CMSTR0.BIT.STR0 = 1;
+  CMT.CMSTR0.BIT.STR0 = 1;      //  CMT0のカウント開始
 }
 
 
@@ -229,18 +236,42 @@ void init_cmt0(void)
  */
 void init_cmt1(void)
 {
-  SYSTEM.PRCR.WORD = 0xA502;
-  MSTP(CMT1) = 0;
-  SYSTEM.PRCR.WORD = 0xA500;
-  CMT.CMSTR0.BIT.STR1 = 0;
-  CMT1.CMCR.BIT.CKS = 1;
-  CMT1.CMCR.BIT.CMIE = 1;
-  CMT1.CMCNT = 0;
-  CMT1.CMCOR = 1500 - 1;
+  //  割り込み周期：1ms(1kHz)
+  //  (1)48MHz / 32分周 = 1.5MHz ≒ 0.667us
+  //  (2)1.5MHz / 1kHz = 1500カウント
+  
+  SYSTEM.PRCR.WORD = 0xA502;    //  プロテクト解除
+  MSTP(CMT1) = 0;               //  CMT1の有効化
+  SYSTEM.PRCR.WORD = 0xA500;    //  プロテクト
+  CMT.CMSTR0.BIT.STR1 = 0;      //  CMT1のカウント停止
+  CMT1.CMCR.BIT.CKS = 1;        //  周波数を32分周設定
+  CMT1.CMCR.BIT.CMIE = 1;       //  割込み許可
+  CMT1.CMCNT = 0;               //  カウント値のリセット
+  CMT1.CMCOR = 1500 - 1;        //  割込み周期を1ms設定
   IEN(CMT1,CMI1) = 1;
   IPR(CMT1,CMI1) = 15;
   IR(CMT1,CMI1) = 0;
-  CMT.CMSTR0.BIT.STR1 = 1;
+  CMT.CMSTR0.BIT.STR1 = 1;      //  CMT1のカウント開始
+}
+
+
+/*
+ *
+ */
+void int_cmt0(void)
+{
+}
+
+
+/*
+ * モータの速度を制御する
+ */
+void int_cmt1(void)
+{
+  v = v + a;
+  //  速度から速度に必要なパルス数に変換する
+  MTU3.TGRC = 3000000 / ((v / MMPP));
+  MTU4.TGRC = 3000000 / ((v / MMPP));
 }
 
 

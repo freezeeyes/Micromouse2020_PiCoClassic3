@@ -19,6 +19,9 @@
 #include <machine.h>
 #include "vect.h"
 
+extern void int_motor_r(void);
+extern void int_motor_l(void);
+
 #pragma section IntPRG
 
 // Exception(Supervisor Instruction)
@@ -55,10 +58,14 @@ void Excep_FCU_FRDYI(void){ }
 void Excep_ICU_SWINT(void){ }
 
 // CMT0 CMI0
-void Excep_CMT0_CMI0(void){ }
+void Excep_CMT0_CMI0(void)
+{
+}
 
 // CMT1 CMI1
-void Excep_CMT1_CMI1(void){ }
+void Excep_CMT1_CMI1(void)
+{
+}
 
 // CMT2 CMI2
 void Excep_CMT2_CMI2(void){ }
@@ -380,7 +387,10 @@ void Excep_TPU9_TGI9D(void){ }
 void Excep_MTU3_TGIA3(void){ }
 
 // MTU3 TGIB3
-void Excep_MTU3_TGIB3(void){ }
+void Excep_MTU3_TGIB3(void)
+{
+  int_motor_r();
+}
 
 // MTU3 TGIC3
 void Excep_MTU3_TGIC3(void){ }
@@ -400,7 +410,10 @@ void Excep_TPU10_TGI10B(void){ }
 void Excep_MTU4_TGIA4(void){ }
 
 // MTU4 TGIB4
-void Excep_MTU4_TGIB4(void){ }
+void Excep_MTU4_TGIB4(void)
+{
+  int_motor_l();
+}
 ///##############################################
 
 // MTU4 TGIC4
