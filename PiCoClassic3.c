@@ -57,6 +57,10 @@ void main(void)
   unsigned char mode = 5;
   
   init_clock();
+  init_led();
+  init_buzzer();
+  init_motor();
+  init_cmt1();
   
   while(1)
   {
