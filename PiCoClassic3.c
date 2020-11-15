@@ -48,6 +48,10 @@ void straight_kukei(float accel, char kukaku);
 void straight_daikei(float accel, char kukaku);
 void rotate_right(void);
 void rotate_left(void);
+void rotate_180(void);
+void kasoku(float accel);
+void step(void);
+void gensoku(float accel);
 void main(void);
 #ifdef __cplusplus
 extern "C" {
@@ -575,6 +579,112 @@ void rotate_left(void)
   MTU.TSTR.BIT.CST3 = 0;
   MTU.TSTR.BIT.CST4 = 0;
   for(i=0; i<1000; i++);
+}
+
+
+/*
+ * 180度旋回する（超信地旋回）
+ */
+void rotate_180(void)
+{
+  int i;
+  
+  PORTC.PODR.BIT.B5 = 1;
+  PORTC.PODR.BIT.B6 = 0;
+  PORT1.PODR.BIT.B5 = 1;
+  for(i=0; i<1000; i++);
+  
+  v = 180;
+  a = 0;
+  step_l = step_r = 0;
+  MTU.TSTR.BIT.CST3 = 1;
+  MTU.TSTR.BIT.CST4 = 1;
+  while((step_l+step_r) < (146*4));
+  
+  MTU.TSTR.BIT.CST3 = 0;
+  MTU.TSTR.BIT.CST4 = 0;
+  for(i=0; i<1000; i++);
+}
+
+
+/*
+ * 加速で前進する（台形加減速の加速部）
+ */
+void kasoku(float accel)
+{
+  int i;
+
+  PORTC.PODR.BIT.B5 = 0;
+  PORTC.PODR.BIT.B6 = 0;
+  PORT1.PODR.BIT.B5 = 1;
+  for(i=0; i<1000; i++);
+
+  v = 180;
+  a = 0;
+  step_l = step_r = 0;
+  MTU.TSTR.BIT.CST3 = 1;
+  MTU.TSTR.BIT.CST4 = 1;
+  
+  while((step_l+step_r) < ((477/2)*2))
+  {
+    if(v < 300)
+    {
+      a = accel;
+    }
+    else
+    {
+      a = 0;
+    }
+  }
+  
+  MTU.TSTR.BIT.CST3 = 0;
+  MTU.TSTR.BIT.CST4 = 0;
+}
+
+
+/*
+ * 定速で前進する（台形加減速の定速部）
+ */
+void step(void)
+{
+  v = 300;
+  a = 0;
+  step_l = step_r = 0;
+  MTU.TSTR.BIT.CST3 = 1;
+  MTU.TSTR.BIT.CST4 = 1;
+  
+  while((step_l+step_r) < ((477)*2));
+  
+  MTU.TSTR.BIT.CST3 = 0;
+  MTU.TSTR.BIT.CST4 = 0;
+}
+
+
+/*
+ * 減速で前進する（台形加減速の減速部）
+ */
+void gensoku(float accel)
+{
+  v = 300;
+  a = accel * -1;
+  step_l = step_r = 0;
+  MTU.TSTR.BIT.CST3 = 1;
+  MTU.TSTR.BIT.CST4 = 1;
+  
+  while((step_l+step_r) < ((477)*2))
+  {
+    if(180 < v)
+    {
+      a = accel * -1;
+    }
+    else
+    {
+      a = 0;
+    }
+  }
+  
+  MTU.TSTR.BIT.CST3 = 0;
+  MTU.TSTR.BIT.CST4 = 0;
 }
 
 
