@@ -24,6 +24,10 @@ volatile float v;   //  速度
 volatile float a;   //  加速度
 volatile unsigned int step_l;   //  左モータのパルスカウンター
 volatile unsigned int step_r;   //  右モータのパルスカウンター
+volatile short r_sen;           //  右センサの反射光値
+volatile short l_sen;           //  左センサの反射光値
+volatile short fr_sen;          //  右前センサの反射光値
+volatile short fl_sen;          //  左前センサの反射光値
 
 void init_clock(void);
 void init_motor(void);
@@ -256,10 +260,57 @@ void init_cmt1(void)
 
 
 /*
- *
+ * 光センサの値をA/D変換で取得する
  */
 void int_cmt0(void)
 {
+  static char state = 0;
+  short i;
+  
+  switch(state)
+  {
+  case 0:
+    PORT0.PODR.BIT.B5 = 1;            //  右センサ用のLED点灯開始
+    for(i=0; i<300; i++);             //  トランジスタが反応するまで待機
+    S12AD.ADANS0.BIT.ANS0 = 0x0040;   //  AN006(右のセンサ)
+    S12AD.ADCSR.BIT.ADST = 1;         //  A/D変換の開始
+    while(S12AD.ADCSR.BIT.ADST);      //  A/D変換が終了するまで待機
+    PORT0.PODR.BIT.B5 = 0;            //  右センサ用のLED消灯
+    r_sen = S12AD.ADDR6;
+    break;
+  case 1:
+    PORT5.PODR.BIT.B4 = 1;            //  左センサ用のLED点灯開始
+    for(i=0; i<300; i++);             //  トランジスタが反応するまで待機
+    S12AD.ADANS0.BIT.ANS0 = 0x0004;   //  AN002(左のセンサ)
+    S12AD.ADCSR.BIT.ADST = 1;         //  A/D変換の開始
+    while(S12AD.ADCSR.BIT.ADST);      //  A/D変換が終了するまで待機
+    PORT5.PODR.BIT.B4 = 0;            //  左センサ用のLED消灯
+    l_sen = S12AD.ADDR2;
+    break;
+  case 2:
+    PORTB.PODR.BIT.B5 = 1;            //  右前センサ用のLED点灯開始
+    for(i=0; i<300; i++);             //  トランジスタが反応するまで待機
+    S12AD.ADANS0.BIT.ANS0 = 0x0200;   //  AN009(右前の光センサ)
+    S12AD.ADCSR.BIT.ADST = 1;         //  A/D変換の開始
+    while(S12AD.ADCSR.BIT.ADST);      //  A/D変換が終了するまで待機
+    PORTB.PODR.BIT.B5 = 0;            //  右前センサ用のLED消灯
+    fr_sen = S12AD.ADDR9;
+    break;
+  case 3:
+    PORT2.PODR.BIT.B7 = 1;            //  左前センサ用のLED点灯開始
+    for(i=0; i<300; i++);             //  トランジスタが反応するまで待機
+    S12AD.ADANS0.BIT.ANS0 = 0x0010;   //  AN004(左前の光センサ)
+    S12AD.ADCSR.BIT.ADST = 1;         //  A/D変換の開始
+    while(S12AD.ADCSR.BIT.ADST);      //  A/D変換が終了するまで待機
+    PORT2.PODR.BIT.B7 = 0;            //  左前センサ用のLED消灯
+    fl_sen = S12AD.ADDR4;
+    break;
+  }
+  
+  state++;
+  if(state>3) {
+    state = 0;
+  }
 }
 
 

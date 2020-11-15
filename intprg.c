@@ -21,6 +21,9 @@
 
 extern void int_motor_r(void);
 extern void int_motor_l(void);
+extern void int_cmt0(void);
+extern void int_cmt1(void);
+
 
 #pragma section IntPRG
 
@@ -60,11 +63,13 @@ void Excep_ICU_SWINT(void){ }
 // CMT0 CMI0
 void Excep_CMT0_CMI0(void)
 {
+  int_cmt0();
 }
 
 // CMT1 CMI1
 void Excep_CMT1_CMI1(void)
 {
+  int_cmt1();
 }
 
 // CMT2 CMI2
