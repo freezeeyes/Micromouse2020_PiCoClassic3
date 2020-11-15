@@ -16,12 +16,17 @@
 
 #include "iodefine.h"
 
-#define IO_OUTPUT 1
-#define IO_INPUT 0
-#define MMPP (0.377)
+#define IO_OUTPUT 1             //  出力ポート値
+#define IO_INPUT 0              //  入力ポート値
+#define HIGH 1
+#define LOW 0
+#define FORWARD 0               //  正回転(前進)
+#define BACKWARD 1              //  逆回転(後進)
+#define MMPP (0.377)            //  １パルスで進む距離
+#define KP (1.0)                //  Pゲイン
 
-volatile float v;   //  速度
-volatile float a;   //  加速度
+volatile float v;               //  速度
+volatile float a;               //  加速度
 volatile unsigned int step_l;   //  左モータのパルスカウンター
 volatile unsigned int step_r;   //  右モータのパルスカウンター
 volatile short r_sen;           //  右センサの反射光値
@@ -67,8 +72,10 @@ void main(void)
   init_clock();
   init_led();
   init_buzzer();
-  init_motor();
+  init_cmt0();
   init_cmt1();
+  init_motor();
+  init_sensor();
   
   while(1)
   {
@@ -110,8 +117,15 @@ void main(void)
     case 4:
       break;
     case 5:
+      //  TODO: 直進テスト
+      straight_kukei(0, 3);
+      //straight_daikei(1, 3);
       break;
     case 6:
+      //  TODO: 旋回テスト
+      rotate_right();
+      //rotate_left();
+      //rotate_180();
       break;
     case 7:
       break;
@@ -398,10 +412,15 @@ void int_cmt0(void)
  */
 void int_cmt1(void)
 {
+  float p;
+  p = (float)(r_sen - l_sen) * KP;
+  
   v = v + a;
   //  速度から速度に必要なパルス数に変換する
-  MTU3.TGRC = 3000000 / ((v / MMPP));
-  MTU4.TGRC = 3000000 / ((v / MMPP));
+  //MTU3.TGRC = 3000000 / ((v / MMPP));
+  //MTU4.TGRC = 3000000 / ((v / MMPP));
+  MTU3.TGRC = 3000000 / (((v + p) / MMPP));
+  MTU4.TGRC = 3000000 / (((v - p) / MMPP));
 }
 
 
