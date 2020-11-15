@@ -24,6 +24,7 @@ void init_motor(void);
 void init_sensor(void);
 void init_led(void);
 void init_buzzer(void);
+void set_led(unsigned char data);
 void main(void);
 #ifdef __cplusplus
 extern "C" {
@@ -191,6 +192,18 @@ void init_buzzer(void)
   MTU0.TCNT = 0;
 }
 
+
+/*
+ * LEDを点灯消灯する
+ */
+void set_led(unsigned char data)
+{
+  //  各LEDの出力ポートに出力値を設定する
+  PORTB.PODR.BIT.B0 = data & 0x01;      //  左端から１番目
+  PORTA.PODR.BIT.B6 = (data>>1)&0x01;   //  左端から２番目
+  PORTA.PODR.BIT.B4 = (data>>2)&0x01;   //  左端から３番目
+  PORTA.PODR.BIT.B0 = (data>>3)&0x01;   //  左端から４番目
+}
 
 #ifdef __cplusplus
 void abort(void)
