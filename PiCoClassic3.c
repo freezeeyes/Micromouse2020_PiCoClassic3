@@ -24,6 +24,8 @@ void init_motor(void);
 void init_sensor(void);
 void init_led(void);
 void init_buzzer(void);
+void init_cmt0(void);
+void init_cmt1(void);
 void set_led(unsigned char data);
 void buzzer_on(void);
 void buzzer_off(void);
@@ -192,6 +194,46 @@ void init_buzzer(void)
   MTU0.TGRA = (13636 - 1);
   MTU0.TGRB = (27272 - 1);
   MTU0.TCNT = 0;
+}
+
+
+/*
+ * 光センサ制御の初期設定
+ */
+void init_cmt0(void)
+{
+  SYSTEM.PRCR.WORD = 0xA502;
+  MSTP(CMT0) = 0;
+  SYSTEM.PRCR.WORD = 0xA500;
+  CMT.CMSTR0.BIT.STR0 = 0;
+  CMT0.CMCR.BIT.CKS = 1;
+  CMT0.CMCR.BIT.CMIE = 1;
+  CMT0.CMCNT = 0;
+  CMT0.CMCOR = 375 - 1;
+  IEN(CMT0,CMI0) = 1;
+  IPR(CMT0,CMI0) = 15;
+  IR(CMT0,CMI0) = 0;
+  CMT.CMSTR0.BIT.STR0 = 1;
+}
+
+
+/*
+ * 速度制御の初期設定（CMT1）
+ */
+void init_cmt1(void)
+{
+  SYSTEM.PRCR.WORD = 0xA502;
+  MSTP(CMT1) = 0;
+  SYSTEM.PRCR.WORD = 0xA500;
+  CMT.CMSTR0.BIT.STR1 = 0;
+  CMT1.CMCR.BIT.CKS = 1;
+  CMT1.CMCR.BIT.CMIE = 1;
+  CMT1.CMCNT = 0;
+  CMT1.CMCOR = 1500 - 1;
+  IEN(CMT1,CMI1) = 1;
+  IPR(CMT1,CMI1) = 15;
+  IR(CMT1,CMI1) = 0;
+  CMT.CMSTR0.BIT.STR1 = 1;
 }
 
 
