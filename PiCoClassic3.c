@@ -41,6 +41,7 @@ void int_cmt1(void);
 void set_led(unsigned char data);
 void buzzer_on(void);
 void buzzer_off(void);
+void buzzer_wait(void);
 void int_motor_r(void);
 void int_motor_l(void);
 void main(void);
@@ -357,6 +358,17 @@ void buzzer_off(void)
 {
   PORTB.PMR.BIT.B3 = 0;     //  機能ポートから汎用ポートに切り替える
   MTU.TSTR.BIT.CST0 = 0;    //  ブザーのカウントを停止する
+}
+
+/*
+ * Buzzerでチャタリングを防止する
+ */
+void buzzer_wait(void)
+{
+  int i;
+  buzzer_on();
+  for(i=0; i<0xFFFFF; i++);
+  buzzer_off();
 }
 
 
