@@ -44,6 +44,10 @@ void buzzer_off(void);
 void buzzer_wait(void);
 void int_motor_r(void);
 void int_motor_l(void);
+void straight_kukei(float accel, char kukaku);
+void straight_daikei(float accel, char kukaku);
+void rotate_right(void);
+void rotate_left(void);
 void main(void);
 #ifdef __cplusplus
 extern "C" {
@@ -457,6 +461,120 @@ void int_motor_r(void)
 void int_motor_l(void)
 {
   step_l++;
+}
+
+
+/*
+ * 直進する（矩形加減速）
+ */
+void straight_kukei(float accel, char kukaku)
+{
+  int i;
+  
+  PORTC.PODR.BIT.B5 = 1;
+  PORTC.PODR.BIT.B6 = 0;
+  PORT1.PODR.BIT.B5 = 1;
+  for(i=0; i<1000; i++);
+  
+  v = 180;
+  a = accel;
+  step_l = step_r = 0;
+  MTU.TSTR.BIT.CST3 = 1;
+  MTU.TSTR.BIT.CST4 = 1;
+  
+  while((step_l+step_r) < (477*kukaku*2));
+
+  MTU.TSTR.BIT.CST3 = 0;
+  MTU.TSTR.BIT.CST4 = 0;
+}
+
+
+/*
+ * 直進する（台形加減速）
+ */
+void straight_daikei(float accel, char kukaku)
+{
+  int i;
+  
+  PORTC.PODR.BIT.B5 = 1;
+  PORTC.PODR.BIT.B6 = 0;
+  PORT1.PODR.BIT.B5 = 1;
+  for(i=0; i<1000; i++);
+  
+  v = 180;
+  a = accel;
+  step_l = step_r = 0;
+  MTU.TSTR.BIT.CST3 = 1;
+  MTU.TSTR.BIT.CST4 = 1;
+  
+  while((step_l+step_r) < (477*kukaku*2))
+  {
+    if((step_l+step_r) < (150*2))
+    {
+      a = accel;
+    }
+    else if((step_l+step_r) < ((477*kukaku-150)*2))
+    {
+      a = 0;
+    }
+    else
+    {
+      a = accel * -1;
+    }
+  }
+
+  MTU.TSTR.BIT.CST3 = 0;
+  MTU.TSTR.BIT.CST4 = 0;
+}
+
+
+/*
+ * 右に旋回する（超信地旋回）
+ */
+void rotate_right(void)
+{
+  int i;
+  
+  PORTC.PODR.BIT.B5 = 1;
+  PORTC.PODR.BIT.B6 = 0;
+  PORT1.PODR.BIT.B5 = 1;
+  for(i=0; i<1000; i++);
+  
+  v = 180;
+  a = 0;
+  step_l = step_r = 0;
+  MTU.TSTR.BIT.CST3 = 1;
+  MTU.TSTR.BIT.CST4 = 1;
+  while((step_l+step_r) < (146*2));
+  
+  MTU.TSTR.BIT.CST3 = 0;
+  MTU.TSTR.BIT.CST4 = 0;
+  for(i=0; i<1000; i++);
+}
+
+
+/*
+ * 左に旋回する（超信地旋回）
+ */
+void rotate_left(void)
+{
+  int i;
+  
+  PORTC.PODR.BIT.B5 = 0;
+  PORTC.PODR.BIT.B6 = 0;
+  PORT1.PODR.BIT.B5 = 1;
+  for(i=0; i<1000; i++);
+  
+  v = 180;
+  a = 0;
+  step_l = step_r = 0;
+  MTU.TSTR.BIT.CST3 = 1;
+  MTU.TSTR.BIT.CST4 = 1;
+  while((step_l+step_r) < (146*2));
+  
+  MTU.TSTR.BIT.CST3 = 0;
+  MTU.TSTR.BIT.CST4 = 0;
+  for(i=0; i<1000; i++);
 }
 
 
