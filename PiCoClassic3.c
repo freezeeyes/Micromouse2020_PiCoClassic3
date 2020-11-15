@@ -54,8 +54,74 @@ void abort(void);
 
 void main(void)
 {
+  unsigned char mode = 5;
+  
   init_clock();
-
+  
+  while(1)
+  {
+    set_led(mode);
+    if(!PORTC.PIDR.BIT.B2)
+    {
+      buzzer_wait();
+      mode++;
+      if(15<mode) { mode = 15; }
+      while(!PORTC.PIDR.BIT.B2);
+      buzzer_wait();
+    }
+    if(!PORT3.PIDR.BIT.B1)
+    {
+      buzzer_wait();
+      mode--;
+      if(mode<1) { mode = 1; }
+      while(!PORT3.PIDR.BIT.B1);
+      buzzer_wait();
+    }
+    if(!PORTC.PIDR.BIT.B3)
+    {
+      buzzer_wait();
+      break;
+    }
+  }
+  
+  //  モード４以降はテストプログラム
+  switch(mode)
+  {
+    case 1:
+      //  TODO: 左手法を記述する
+      break;
+    case 2:
+      //  TODO: 足立法を記述する
+      break;
+    case 3:
+      break;
+    case 4:
+      break;
+    case 5:
+      break;
+    case 6:
+      break;
+    case 7:
+      break;
+    case 8:
+      break;
+    case 9:
+      break;
+    case 10:
+      break;
+    case 11:
+      break;
+    case 12:
+      break;
+    case 13:
+      break;
+    case 14:
+      break;
+    case 15:
+      break;
+  }
+  
+  while(1);
 }
 
 
