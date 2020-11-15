@@ -19,6 +19,11 @@
 #define IO_OUTPUT 1
 #define IO_INPUT 0
 
+volatile float v;   //  速度
+volatile float a;   //  加速度
+volatile unsigned int step_l;   //  左モータのパルスカウンター
+volatile unsigned int step_r;   //  右モータのパルスカウンター
+
 void init_clock(void);
 void init_motor(void);
 void init_sensor(void);
@@ -29,6 +34,8 @@ void init_cmt1(void);
 void set_led(unsigned char data);
 void buzzer_on(void);
 void buzzer_off(void);
+void int_motor_r(void);
+void int_motor_l(void);
 void main(void);
 #ifdef __cplusplus
 extern "C" {
@@ -269,6 +276,25 @@ void buzzer_off(void)
   PORTB.PMR.BIT.B3 = 0;     //  機能ポートから汎用ポートに切り替える
   MTU.TSTR.BIT.CST0 = 0;    //  ブザーのカウントを停止する
 }
+
+
+/*
+ * 右モータのパルスをカウントする
+ */
+void int_motor_r(void)
+{
+  step_r++;
+}
+
+
+/*
+ * 左モータのパルスをカウントする
+ */
+void int_motor_l(void)
+{
+  step_l++;
+}
+
 
 #ifdef __cplusplus
 void abort(void)
