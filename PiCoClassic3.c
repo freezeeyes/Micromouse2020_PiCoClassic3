@@ -22,8 +22,15 @@
 #define LOW 0
 #define FORWARD 0               //  正回転(前進)
 #define BACKWARD 1              //  逆回転(後進)
+//  TODO: MMPPの値を修正する（実際に走行した距離÷その走行で使用したパルス数）
 #define MMPP (0.377)            //  １パルスで進む距離
+//  TODO: Pゲインの値を修正する
 #define KP (1.0)                //  Pゲイン
+//  TODO: センサの目標値を修正する
+#define r_sen_ref 537           //  右センサの目標値（中央に置いた時の値）
+#define l_sen_ref 518           //  左センサの目標値（中央に置いた時の値）
+#define r_wall_ref 40           //  右壁なしの目標値（右壁がない状態の右端に置いた時の値）
+#define l_wall_ref 27           //  左壁なしの目標値（左壁がない状態の左壁に置いた時の値）
 
 volatile float v;               //  速度
 volatile float a;               //  加速度
@@ -412,10 +419,38 @@ void int_cmt0(void)
  */
 void int_cmt1(void)
 {
+  short sen_diff, sen_diff_r, sen_diff_l, scale;
   float p;
-  p = (float)(r_sen - l_sen) * KP;
   
   v = v + a;
+  
+  scale = 1;
+  //  右壁ありの処理
+  if(((r_wall_ref+r_sen_ref)/2) < r_sen)
+  {
+    sen_diff_r = r_sen - r_sen_ref;
+  }
+  else
+  {
+    sen_diff_r = 0;
+    scale = 2;
+  }
+  //  左壁ありの処理
+  if(((l_wall_ref+l_sen_ref)/2) < l_sen)
+  {
+    sen_diff_l = l_sen_ref - l_sen;
+  }
+  else
+  {
+    sen_diff_l = 0;
+    scale = 2;
+  }
+  
+  //  P制御の操作量を求める
+  //p = (float)(r_sen - l_sen) * KP;
+  sen_diff = (sen_diff_l+sen_diff_r) * scale;
+  p = (float)(sen_diff) * KP;
+  
   //  速度から速度に必要なパルス数に変換する
   //MTU3.TGRC = 3000000 / ((v / MMPP));
   //MTU4.TGRC = 3000000 / ((v / MMPP));
@@ -456,6 +491,7 @@ void buzzer_off(void)
   PORTB.PMR.BIT.B3 = 0;     //  機能ポートから汎用ポートに切り替える
   MTU.TSTR.BIT.CST0 = 0;    //  ブザーのカウントを停止する
 }
+
 
 /*
  * Buzzerでチャタリングを防止する
